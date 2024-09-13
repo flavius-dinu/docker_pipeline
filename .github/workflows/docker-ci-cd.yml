@@ -78,7 +78,6 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.image }}
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
             type=sha,prefix={{branch}}-
 
       - name: Build and push Docker image
@@ -90,14 +89,15 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          load: ${{ github.event_name == 'pull_request' }}
+          load: true  # Always load the image locally
 
       - name: Debug Docker images
         run: |
+          echo "Available tags: ${{ steps.meta.outputs.tags }}"
           echo "Listing all Docker images:"
           docker images
-          echo "Attempting to pull the image:"
-          docker pull ${{ github.event_name == 'push' && format('{0}/{1}/{2}:{3}', env.REGISTRY, github.repository, matrix.image, github.sha) || format('ci-local/{0}:{1}', matrix.image, github.sha) }} || echo "Pull failed, image might be local only"
+          echo "Inspecting built image:"
+          docker inspect ${{ steps.meta.outputs.tags }}
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
