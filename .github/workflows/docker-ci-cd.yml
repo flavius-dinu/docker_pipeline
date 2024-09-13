@@ -20,10 +20,30 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+
       - id: set-matrix
         run: |
-          CHANGED_DIRS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^images/' | cut -d/ -f2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            # For pull requests, compare against the base branch
+            BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+            CHANGED_DIRS=$(git diff --name-only $BASE_SHA ${{ github.sha }} | grep '^images/' | cut -d/ -f2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+          elif [ "${{ github.event_name }}" == "push" ]; then
+            # For pushes, compare against the previous commit
+            CHANGED_DIRS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^images/' | cut -d/ -f2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
+          else
+            # Fallback: consider all directories changed
+            CHANGED_DIRS=$(find images -maxdepth 1 -type d | cut -d/ -f2 | jq -R -s -c 'split("\n")[1:-1]')
+          fi
+
+          # If no changes detected, consider all directories
+          if [ "$CHANGED_DIRS" == "[]" ] || [ -z "$CHANGED_DIRS" ]; then
+            CHANGED_DIRS=$(find images -maxdepth 1 -type d | cut -d/ -f2 | jq -R -s -c 'split("\n")[1:-1]')
+          fi
+
           echo "matrix=${CHANGED_DIRS}" >> $GITHUB_OUTPUT
+        shell: bash
 
   build-and-push:
     needs: detect-changes
