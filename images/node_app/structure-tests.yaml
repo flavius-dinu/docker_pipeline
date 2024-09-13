@@ -1,0 +1,39 @@
+schemaVersion: '2.0.0'
+
+commandTests:
+  - name: "Node.js version"
+    command: "node"
+    args: ["--version"]
+    expectedOutput: ["v14.17.6"]
+
+  - name: "npm availability"
+    command: "npm"
+    args: ["--version"]
+    expectedOutput: ["*"]
+
+fileExistenceTests:
+  - name: "Working directory"
+    path: "/app"
+    shouldExist: true
+    permissions: "drwxr-xr-x"
+
+  - name: "Application file"
+    path: "/app/index.js"
+    shouldExist: true
+
+  - name: "node_modules"
+    path: "/app/node_modules"
+    shouldExist: true
+
+  - name: "package.json"
+    path: "/app/package.json"
+    shouldExist: true
+
+metadataTest:
+  workdir: "/app"
+  cmd: ["node", "index.js"]
+
+fileContentTests:
+  - name: "Correct base image"
+    path: "/etc/os-release"
+    expectedContents: ["Alpine Linux"]

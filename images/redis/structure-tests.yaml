@@ -1,0 +1,21 @@
+schemaVersion: '2.0.0'
+
+fileExistenceTests:
+  - name: 'Dockerfile exists'
+    path: '/Dockerfile'
+    shouldExist: true
+
+metadataTest:
+  exposedPorts: ['6379']
+  cmd: ['redis-server']
+
+commandTests:
+  - name: 'Redis server is installed'
+    command: 'which'
+    args: ['redis-server']
+    expectedOutput: ['/usr/local/bin/redis-server']
+
+fileContentTests:
+  - name: 'Using official Redis Alpine image'
+    path: '/Dockerfile'
+    expectedContents: ['FROM redis:alpine']
