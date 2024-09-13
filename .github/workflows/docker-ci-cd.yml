@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Fetch all history for all branches and tags
+          fetch-depth: 0
 
       - id: set-matrix
         run: |
@@ -36,10 +36,10 @@ jobs:
             # Fallback: consider all directories changed
             CHANGED_DIRS=$(find images -maxdepth 1 -type d | cut -d/ -f2 | jq -R -s -c 'split("\n")[1:-1]')
           fi
-
-          # If no changes detected, consider all directories
+          
           if [ "$CHANGED_DIRS" == "[]" ] || [ -z "$CHANGED_DIRS" ]; then
-            CHANGED_DIRS=$(find images -maxdepth 1 -type d | cut -d/ -f2 | jq -R -s -c 'split("\n")[1:-1]')
+            echo "No changes detected, skipping build."
+            exit 0  # Exit without setting the matrix
           fi
 
           echo "matrix=${CHANGED_DIRS}" >> $GITHUB_OUTPUT
