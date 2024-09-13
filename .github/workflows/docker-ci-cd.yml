@@ -103,10 +103,19 @@ jobs:
           sarif_file: 'trivy-results.sarif'
 
       - name: Run container structure tests
-        uses: GoogleContainerTools/container-structure-test@v1.15.0
-        with:
-          image: ${{ github.event_name == 'push' && format('{0}/{1}/{2}:{3}', env.REGISTRY, github.repository, matrix.image, github.sha) || format('ci-local/{0}:{1}', matrix.image, github.sha) }}
-          config: ./images/${{ matrix.image }}/structure-tests.yaml
+        run: |
+          # Install container-structure-test
+          curl -LO https://storage.googleapis.com/container-structure-test/latest/container-structure-test-linux-amd64
+          chmod +x container-structure-test-linux-amd64
+          sudo mv container-structure-test-linux-amd64 /usr/local/bin/container-structure-test
+
+          # Set the image reference
+          IMAGE_REF="${{ github.event_name == 'push' && format('{0}/{1}/{2}:{3}', env.REGISTRY, github.repository, matrix.image, github.sha) || format('ci-local/{0}:{1}', matrix.image, github.sha) }}"
+
+          # Run the tests
+          container-structure-test test --image "$IMAGE_REF" --config ./images/${{ matrix.image }}/structure-tests.yaml
+
+        shell: bash
 
   deploy:
     needs: build-and-push
