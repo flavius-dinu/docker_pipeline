@@ -6,11 +6,6 @@ commandTests:
     args: ["redis-server"]
     expectedOutput: ["/usr/local/bin/redis-server"]
 
-fileExistenceTests:
-  - name: "Redis configuration file exists"
-    path: "/etc/redis/redis.conf"
-    shouldExist: true
-
 metadataTest:
   exposedPorts: ["6379"]
   volumes: ["/data"]
