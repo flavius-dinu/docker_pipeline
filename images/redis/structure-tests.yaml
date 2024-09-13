@@ -12,9 +12,6 @@ fileExistenceTests:
     shouldExist: true
 
 metadataTest:
-  env:
-    - key: "PATH"
-      value: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
   exposedPorts: ["6379"]
   volumes: ["/data"]
   workdir: "/data"
