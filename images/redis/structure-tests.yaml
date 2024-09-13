@@ -8,7 +8,7 @@ commandTests:
 
 fileExistenceTests:
   - name: "Redis configuration file exists"
-    path: "/usr/local/etc/redis/redis.conf"
+    path: "/etc/redis/redis.conf"
     shouldExist: true
 
 metadataTest:
