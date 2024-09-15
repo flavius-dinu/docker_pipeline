@@ -32,11 +32,8 @@ jobs:
           elif [ "${{ github.event_name }}" == "push" ]; then
             # For pushes, compare against the previous commit
             CHANGED_DIRS=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^images/' | cut -d/ -f2 | sort -u | jq -R -s -c 'split("\n")[:-1]')
-          else
-            # Fallback: consider all directories changed
-            CHANGED_DIRS=$(find images -maxdepth 1 -type d | cut -d/ -f2 | jq -R -s -c 'split("\n")[1:-1]')
           fi
-          
+
           if [ "$CHANGED_DIRS" == "[]" ] || [ -z "$CHANGED_DIRS" ]; then
             echo "No changes detected, skipping build."
             exit 0  # Exit without setting the matrix
@@ -84,12 +81,12 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./images/${{ matrix.image }}
-          push: false  # Don't push, just build locally
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          load: true  # Ensure the image is loaded into the Docker daemon
+          load: true
 
       - name: Debug Docker images
         run: |
